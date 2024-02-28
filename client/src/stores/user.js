@@ -3,17 +3,12 @@ import { defineStore, storeToRefs } from "pinia";
 import { useQuasar, QSpinnerPie } from "quasar";
 import { useStorage } from "@vueuse/core";
 
-import { useUserStore } from "./user";
 
 /**
- * The UI store manages UI functionality and state.
+ * The User store manages User functionality and state.
  */
-export const useUIStore = defineStore("ui", () => {
+export const useUserStore = defineStore("user", () => {
   const $q = useQuasar();
-
-  const user = useUserStore();
-
-  const { isNew } = storeToRefs(user);
 
   // STATE - Store state is defined refs
   const darkMode = useStorage("darkMode", false);
@@ -24,10 +19,7 @@ export const useUIStore = defineStore("ui", () => {
   const showConfetti = ref(false);
 
   // GETTERS - Computed functions become store getters
-  const authenticated = computed(() => {
-    console.log("UI", user.isSignedIn);
-    return user.isSignedIn ? true : false;
-  });
+
 
   // ACTIONS - Plain functions become store actions
 
