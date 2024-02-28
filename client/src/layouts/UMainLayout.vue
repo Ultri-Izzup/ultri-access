@@ -23,13 +23,15 @@ import { storeToRefs } from "pinia";
 
 import { useQuasar } from "quasar";
 
+import { useUserStore } from "../stores/user"
+
 import PageHeader from "../components/layout/PageHeader.vue";
 import PageFooter from "../components/layout/PageFooter.vue";
 import LeftDrawer from "../components/layout/LeftDrawer.vue";
 
 const $q = useQuasar();
 
-const ui = useUIStore();
-const { leftDrawerOpen } = storeToRefs(ui);
+const user = useUserStore();
+const { leftDrawerOpen } = storeToRefs(user);
 
 </script>
