@@ -1,19 +1,23 @@
 /* eslint-env node */
 
+/*
+ * This file runs in a Node context (it's NOT transpiled by Babel), so use only
+ * the ES6 features that are supported by your Node version. https://node.green/
+ */
+
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
 
-import { configure } from 'quasar/wrappers'
-import { fileURLToPath } from 'node:url';
+const { configure } = require('quasar/wrappers');
+const path = require('path');
 
-export default configure((ctx) => {
+module.exports = configure(function (/* ctx */) {
   return {
     eslint: {
       // fix: true,
       // include: [],
       // exclude: [],
-      // cache: false,
       // rawOptions: {},
       warnings: true,
       errors: true
@@ -76,7 +80,7 @@ export default configure((ctx) => {
       // viteVuePluginOptions: {},
 
       vitePlugins: [
-        ['@intlify/unplugin-vue-i18n/vite', {
+        ['@intlify/vite-plugin-vue-i18n', {
           // if you want to use Vue I18n Legacy API, you need to set `compositionOnly: false`
           // compositionOnly: false,
 
@@ -84,10 +88,8 @@ export default configure((ctx) => {
           // you need to set `runtimeOnly: false`
           // runtimeOnly: false,
 
-          ssr: ctx.modeName === 'ssr',
-
           // you need to set i18n resource including paths !
-          include: [ fileURLToPath(new URL('./src/i18n', import.meta.url)) ],
+          include: path.resolve(__dirname, './src/i18n/**')
         }]
       ]
     },
@@ -113,7 +115,7 @@ export default configure((ctx) => {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['Dialog','Loading','Meta']
+      plugins: []
     },
 
     // animations: 'all', // --- includes all animations
@@ -125,51 +127,46 @@ export default configure((ctx) => {
     //   rootComponent: 'src/App.vue',
     //   router: 'src/router/index',
     //   store: 'src/store/index',
-    //   pwaRegisterServiceWorker: 'src-pwa/register-service-worker',
-    //   pwaServiceWorker: 'src-pwa/custom-service-worker',
+    //   registerServiceWorker: 'src-pwa/register-service-worker',
+    //   serviceWorker: 'src-pwa/custom-service-worker',
     //   pwaManifestFile: 'src-pwa/manifest.json',
     //   electronMain: 'src-electron/electron-main',
     //   electronPreload: 'src-electron/electron-preload'
-    //   bexManifestFile: 'src-bex/manifest.json
     // },
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-ssr/configuring-ssr
     ssr: {
+      // ssrPwaHtmlFilename: 'offline.html', // do NOT use index.html as name!
+                                          // will mess up SSR
+
+      // extendSSRWebserverConf (esbuildConf) {},
+      // extendPackageJson (json) {},
+
+      pwa: false,
+
+      // manualStoreHydration: true,
+      // manualPostHydrationTrigger: true,
+
       prodPort: 3000, // The default port that the production server should use
                       // (gets superseded if process.env.PORT is specified at runtime)
 
       middlewares: [
         'render' // keep this as last one
-      ],
-
-      // extendPackageJson (json) {},
-      // extendSSRWebserverConf (esbuildConf) {},
-
-      // manualStoreSerialization: true,
-      // manualStoreSsrContextInjection: true,
-      // manualStoreHydration: true,
-      // manualPostHydrationTrigger: true,
-
-      pwa: false
-
-      // pwaOfflineHtmlFilename: 'offline.html', // do NOT use index.html as name!
-                                                 // will mess up SSR
-
-      // pwaExtendGenerateSWOptions (cfg) {},
-      // pwaExtendInjectManifestOptions (cfg) {}
+      ]
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'GenerateSW' // 'GenerateSW' or 'InjectManifest'
-      // swFilename: 'sw.js',
-      // manifestFilename: 'manifest.json'
-      // extendManifestJson (json) {},
-      // useCredentialsForManifestTag: true,
-      // injectPwaMetaTags: false,
-      // extendPWACustomSWConf (esbuildConf) {},
-      // extendGenerateSWOptions (cfg) {},
-      // extendInjectManifestOptions (cfg) {}
+      workboxMode: 'generateSW', // or 'injectManifest'
+      injectPwaMetaTags: true,
+      swFilename: 'sw.js',
+      manifestFilename: 'manifest.json',
+      useCredentialsForManifestTag: false,
+      // useFilenameHashes: true,
+      // extendGenerateSWOptions (cfg) {}
+      // extendInjectManifestOptions (cfg) {},
+      // extendManifestJson (json) {}
+      // extendPWACustomSWConf (esbuildConf) {}
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-cordova-apps/configuring-cordova
@@ -184,13 +181,8 @@ export default configure((ctx) => {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-electron-apps/configuring-electron
     electron: {
-      // extendElectronMainConf (esbuildConf) {},
-      // extendElectronPreloadConf (esbuildConf) {},
-
-      // extendPackageJson (json) {},
-
-      // Electron preload scripts (if any) from /src-electron, WITHOUT file extension
-      preloadScripts: [ 'electron-preload' ],
+      // extendElectronMainConf (esbuildConf)
+      // extendElectronPreloadConf (esbuildConf)
 
       // specify the debugging port to use for the Electron app when running in development mode
       inspectPort: 5858,
@@ -213,18 +205,18 @@ export default configure((ctx) => {
       builder: {
         // https://www.electron.build/configuration/configuration
 
-        appId: 'client'
+        appId: 'ultri-client'
       }
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/developing-browser-extensions/configuring-bex
     bex: {
-      // extendBexScriptsConf (esbuildConf) {},
-      // extendBexManifestJson (json) {},
-
       contentScripts: [
         'my-content-script'
-      ]
+      ],
+
+      // extendBexScriptsConf (esbuildConf) {}
+      // extendBexManifestJson (json) {}
     }
   }
 });

@@ -1,6 +1,6 @@
-# Ultri Access Client (client)
+# Ultri (ultri-client)
 
-Client app for accessing encrypted objects
+Fediverse, social, ecommerce and cloud file client.
 
 ## Install the dependencies
 ```bash
