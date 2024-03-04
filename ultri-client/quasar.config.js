@@ -12,8 +12,7 @@
 const { configure } = require('quasar/wrappers');
 const path = require('path');
 
-module.exports = configure(function (/* ctx */) {
-  return {
+module.exports = configure((/* ctx */) => ({
     eslint: {
       // fix: true,
       // include: [],
@@ -42,7 +41,7 @@ module.exports = configure(function (/* ctx */) {
     // https://github.com/quasarframework/quasar/tree/dev/extras
     extras: [
       // 'ionicons-v4',
-      // 'mdi-v7',
+      'mdi-v7',
       // 'fontawesome-v6',
       // 'eva-icons',
       // 'themify',
@@ -96,15 +95,32 @@ module.exports = configure(function (/* ctx */) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#devServer
     devServer: {
-      // https: true
-      open: true // opens browser window automatically
+      https: true,
+      host: 'example.org',
+      open: false, // opens browser window automatically,
+      vueDevtools: true,
+      // server: {
+      //   type: 'https', // NECESSARY (alternative is type 'http')
+
+      //   options: {
+      //     // Use ABSOLUTE paths or path.join(__dirname, 'root/relative/path')
+      //     key: "./example.org-key.pem",
+      //     pfx: "./pkcs12.pfx",
+      //     cert: "./example.org.pem",
+      //     ca: "/home/brian/.local/share/mkcert/rootCA.pem",
+      //     passphrase: '' // do you need it?
+      //   }
+      // }
+
     },
+
+    // openssl pkcs12 -export -in example.org.pem -inkey example.org-key.pem -out pkcs12.pfx -certfile /home/brian/.local/share/mkcert/rootCA.pem
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
     framework: {
       config: {},
 
-      // iconSet: 'material-icons', // Quasar icon set
+      iconSet: 'mdi-v7', // Quasar icon set
       // lang: 'en-US', // Quasar language pack
 
       // For special cases outside of where the auto-import strategy can have an impact
@@ -157,7 +173,7 @@ module.exports = configure(function (/* ctx */) {
 
     // https://v2.quasar.dev/quasar-cli-vite/developing-pwa/configuring-pwa
     pwa: {
-      workboxMode: 'generateSW', // or 'injectManifest'
+      workboxMode: 'injectManifest', // 'generateSW' or 'injectManifest'
       injectPwaMetaTags: true,
       swFilename: 'sw.js',
       manifestFilename: 'manifest.json',
@@ -218,5 +234,4 @@ module.exports = configure(function (/* ctx */) {
       // extendBexScriptsConf (esbuildConf) {}
       // extendBexManifestJson (json) {}
     }
-  }
-});
+  }));

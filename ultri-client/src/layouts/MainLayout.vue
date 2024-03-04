@@ -44,4 +44,16 @@ const leftDrawerOpen = ref(false);
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 };
+
+if(window.Worker) {
+    const uWorker = new Worker('./modules/ultri-worker.js');
+
+    uWorker.onmessage = (event) => {
+        console.log('DEDICATED WORKER EVENT RETURNED', event)
+    }
+
+    uWorker.postMessage({load_spaces: 'test'})
+}
+
+
 </script>
