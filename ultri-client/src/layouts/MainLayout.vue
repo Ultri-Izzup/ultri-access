@@ -37,23 +37,16 @@
 <script setup>
 import { ref } from "vue";
 
-import ULeftDrawer from "../components/drawers/ULeftDrawer.vue"
+import ULeftDrawer from "../components/drawers/ULeftDrawer.vue";
+
+import { useUltriStore } from "../stores/ultri";
+
+const $u = useUltriStore();
 
 const leftDrawerOpen = ref(false);
 
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 };
-
-if(window.Worker) {
-    const uWorker = new Worker('./modules/ultri-worker.js');
-
-    uWorker.onmessage = (event) => {
-        console.log('DEDICATED WORKER EVENT RETURNED', event)
-    }
-
-    uWorker.postMessage({load_spaces: 'test'})
-}
-
 
 </script>
