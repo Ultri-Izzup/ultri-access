@@ -5,33 +5,25 @@ import { useStorage } from "@vueuse/core";
 // import { api } from "boot/axios";
 
 /**
- * Ultri Worker
+ * Initialize Ultri Worker
  */
 let uWorker = null;
 
 if(window.Worker) {
-  // Create Ultri Dedicated Worker.
+  // Create Ultri Dedicated OPFS Worker.
   // Each script or tab will have it's own copy of this worker.
-  uWorker = new Worker('./modules/ultri-worker.js');
-  console.log('WORKER LOADED')
+  uWorker = new Worker('./modules/ultri-worker.mjs',{ type: 'module' });
 
-  // Handle responses for each type
+  // Define handlers for each message type
   uWorker.onmessage = (msg) => {
 
     console.log('STORE - DEDICATED WORKER EVENT RETURNED DATA \n', msg)
-
-      // if(msg.data.load_manifest) {
-      //   console.log('OPEN MANIFEST RETURNED', msg.data.load_manifest);
-      // }
-
-      if(msg.data.open_file) {
-        console.log('OPEN FILE RETURNED', msg.data.open_file);
-      }
+    if(msg.data.read_directory) {
+      console.log('READ DIRECTORY RETURNED', msg.data.read_directory);
+    }
   }
 
-  // Call the worker to load the UltriManifest.json
-  // uWorker.postMessage({load_manifest: true})
-  // uWorker.postMessage({open_file: 'UltriManifest.json'})
+  console.log('WORKER LOADED IN STORE');
 }
 
 /**
@@ -45,13 +37,13 @@ export const useUltriStore = defineStore("ultri", () => {
    * These should be consumed using Pinia storeToRefs.
    * These should all be accounted for in the $reset function as well.
    */
+  const workspaces = useStorage("workspaces", new Map());
   const ultriVersion = ref(null);
 
 
   /**
    * GETTERS - *Computed* functions become store getters
    */
-
   const workerEnabled = computed(() => {
     return uWorker ? true : false;
   })
@@ -59,9 +51,26 @@ export const useUltriStore = defineStore("ultri", () => {
   /**
    * ACTIONS - Plain arrow functions become store actions
    */
-  const $reset = () => {
-    ultriVersion.value = null;
 
+  const loadWorkspaces = async () => {
+    console.log('LOADING WORKSPACES')
+    const readConf = {
+      path: "/workspaces"
+    }
+    console.log('UWORKER', uWorker)
+      uWorker.postMessage('read_directory', readConf);
+  }
+
+  const readDirectory = async (readConfigObj) => {
+    const dirPath = readConfigObj.dirPath;
+
+    console.log('READ DIRECTORY', dirPath)
+
+  }
+
+  const $reset = () => {
+    spaces.value = new Map();
+    ultriVersion.value = null;
   };
 
   /**
@@ -69,6 +78,7 @@ export const useUltriStore = defineStore("ultri", () => {
    */
   return {
     // STATE
+    workspaces,
 
 
     // GETTERS
@@ -76,6 +86,7 @@ export const useUltriStore = defineStore("ultri", () => {
 
 
     // ACTIONS
+    loadWorkspaces,
     $reset,
 
   };

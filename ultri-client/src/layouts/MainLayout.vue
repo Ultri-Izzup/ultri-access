@@ -21,10 +21,11 @@
       bordered
     >
       <!-- drawer content -->
-      <u-left-drawer></u-left-drawer>
+      <workspace-drawer></workspace-drawer>
     </q-drawer>
 
     <q-page-container>
+            {{$u.workerEnabled}}
       <router-view />
     </q-page-container>
 
@@ -37,7 +38,7 @@
 <script setup>
 import { ref } from "vue";
 
-import ULeftDrawer from "../components/drawers/ULeftDrawer.vue";
+import WorkspaceDrawer from "../components/drawers/WorkspaceDrawer.vue";
 
 import { useUltriStore } from "../stores/ultri";
 
