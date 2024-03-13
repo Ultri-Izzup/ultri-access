@@ -18,8 +18,13 @@ if(window.Worker) {
   uWorker.onmessage = (msg) => {
 
     console.log('STORE - DEDICATED WORKER EVENT RETURNED DATA \n', msg)
+
     if(msg.data.read_directory) {
       console.log('READ DIRECTORY RETURNED', msg.data.read_directory);
+    }
+
+    if(msg.data.write_files) {
+      console.log('WRITE FILES', Object.getOwnPropertyNames(msg.data.write_files));
     }
   }
 
@@ -68,6 +73,26 @@ export const useUltriStore = defineStore("ultri", () => {
 
   }
 
+
+  const saveWorkspace = (workspaceMeta) => {
+
+    console.log('WORKSPACE META', workspaceMeta)
+
+    const path = `/workspaces/${workspaceMeta.uid}/meta.json`;
+
+    const writeData = new Map(
+      [
+        [path, JSON.stringify(workspaceMeta)]
+      ]
+    )
+
+    console.log('WRITE DATA', writeData)
+
+    uWorker.postMessage({write_files: writeData});
+
+  }
+
+
   const $reset = () => {
     spaces.value = new Map();
     ultriVersion.value = null;
@@ -78,6 +103,7 @@ export const useUltriStore = defineStore("ultri", () => {
    */
   return {
     // STATE
+    saveWorkspace,
     workspaces,
 
 

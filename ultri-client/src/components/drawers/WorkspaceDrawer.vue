@@ -23,7 +23,7 @@
       </q-item>
       <q-separator></q-separator>
     </q-list>
-    <workspace-meta-dialog v-model="metaDialogVisible" mode="create"></workspace-meta-dialog>
+    <workspace-meta-dialog v-model="metaDialogVisible" mode="create" @workspace="workspace => $u.saveWorkspace(workspace)"></workspace-meta-dialog>
   </q-scroll-area>
 </template>
 
@@ -43,20 +43,6 @@ const metaDialogVisible = ref(false);
 const { workspaces } = storeToRefs($u, readonly);
 
 const $q = useQuasar();
-
-// $q.dialog({
-//   component: WorkspaceMetaDialog,
-
-//   componentProps: {
-//     mode: 'create'
-//   }
-// }).onOk(() => {
-//   console.log('OK')
-// }).onCancel(() => {
-//   console.log('Cancel')
-// }).onDismiss(() => {
-//   console.log('Called on OK or Cancel')
-// });
 
 onMounted(async() => {
   console.log('WORKER ENABLED?', $u.workerEnabled)
