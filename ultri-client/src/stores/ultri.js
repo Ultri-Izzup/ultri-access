@@ -82,7 +82,7 @@ export const useUltriStore = defineStore("ultri", () => {
 
     const writeData = new Map(
       [
-        [path, JSON.stringify(workspaceMeta)]
+        [path, workspaceMeta]
       ]
     )
 

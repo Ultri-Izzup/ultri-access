@@ -1,6 +1,10 @@
 const opfsRootDH = await navigator.storage.getDirectory();
 console.log('OPFS ROOT DIR HANDLE', opfsRootDH);
 
+// Cache directory and file handles in a Map
+const dirHandles = new Map();
+const fileHandles = new Map();
+
 const topLevelPaths = ['workspaces'];
 
 const fileExtensions = ['json'];
@@ -62,6 +66,88 @@ const parsePath = (path) => {
 
 }
 
+const writeFile = async (dirSegments, filename,  data) => {
+
+  console.log('ATTEMPT WRITE FILE', `/${dirSegments.join('/')}/${filename}`)
+
+  // Get the file handle
+  const writeableFH = await getFileHandle(dirSegments, filename);
+
+  // Write the file
+  // writeableFH = getFileHandle(dirSegments, filename);
+
+}
+
+const getFileHandle = async (dirSegments, filename) => {
+
+  console.log('GET  FILEHANDLE', `/${dirSegments.join('/')}/${filename}`);
+
+  // get the directory handle for parent directory
+
+  const dirHandle = await getDirHandle(dirSegments)
+
+}
+
+const getDirHandle = async (dirSegments) => {
+
+    const targetHandleName = `/${dirSegments.join("/")}`;
+
+    console.log(`LOADING ${targetHandleName}`);
+
+    // If we already have the desired handle, return it.
+    if (dirHandles.has(targetHandleName)) {
+      console.log('USING CACHED DIRHANDLE', targetHandleName);
+      return dirHandles.get(targetHandleName);
+    }
+
+    let currDirHandle = opfsRootDH;
+    let currDirName ="/";
+
+    for (const segment of dirSegments) {
+      currDirName = `${currDirName}${segment}/`;
+      console.log(`RECURSED TO ${currDirName}`)
+      if (dirHandles.has(currDirName)) {
+        console.log('USING CACHED DIRHANDLE', currDirName);
+        currDirHandle = dirHandles.get(currDirName)
+      } else {
+        console.log('LOADING DIRHANDLE', currDirName);
+        currDirHandle = await currDirHandle.getDirectoryHandle(segment, {create: true});
+        dirHandles.set(currDirName, currDirHandle)
+      }
+    }
+
+    console.log('RETURING DIRHANDLE', currDirHandle)
+    return currDirHandle;
+
+    // //
+
+    // // Keep track of the current path segments to save the dirHandles as we recurse.
+    // const currHandleSegments = [];
+
+    //
+
+    // for (const segment of dirSegments) {
+
+    //   currHandleSegments.push(segment);
+
+    //   const dirPath = currHandleSegments.join("/");
+
+    //   console.log('CURRENT DIR PATH', dirPath);
+
+    //   if (dirHandles.has(dirPath)) {
+    //     console.log(`USING CACHED DIRHANDLE FOR ${dirPath}`);
+    //     currDirHandle = dirHandles.get(dirPath);
+    //   } else {
+    //     console.log(`LOADING DIRHANDLE ${dirPath}`);
+
+    //     // dirHandles.set(dirPath, currDirHandle);
+    //   }
+    // }
+
+
+
+};
+
 self.onmessage = async (msg) => {
   console.log('WORKER MESSAGE RECEIVED 4', msg)
 
@@ -78,11 +164,20 @@ self.onmessage = async (msg) => {
 
     for (const [path, value] of msg.data.write_files) { // Using the default iterator (could be `map.entries()` instead)
       console.log(`Writing a/an ${typeof value} to ${path}`);
+      let writeable = value;
+
+      // Stringify objects for writing
+      if(typeof value === 'object') {
+        writeable = JSON.stringify(value)
+      }
 
       // Break path into parts and filename
       const { dirSegments, filename } = parsePath(path);
       console.log('DIR SEGMENTS', dirSegments)
-      console.log('filename', filename)
+      console.log('FILENAME', filename)
+
+      // Write the file, await?
+     writeFile(dirSegments, filename, writeable);
     }
   }
 
