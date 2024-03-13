@@ -1,6 +1,9 @@
 const opfsRootDH = await navigator.storage.getDirectory();
 console.log('OPFS ROOT DIR HANDLE', opfsRootDH);
 
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
+
 // Cache directory and file handles in a Map
 const dirHandles = new Map();
 const fileHandles = new Map();
@@ -69,13 +72,24 @@ const parsePath = (path) => {
 const writeFile = async (dirSegments, filename,  data) => {
 
   console.log('ATTEMPT WRITE FILE', `/${dirSegments.join('/')}/${filename}`)
+  console.log('WITH DATA', data)
 
   // Get the file handle
-  const writeableFH = await getFileHandle(dirSegments, filename);
+  const accessFH = await getFileHandle(dirSegments, filename);
 
   // Write the file
   // writeableFH = getFileHandle(dirSegments, filename);
-
+  // Initialize this variable for the size of the file.
+  let size;
+  // The current size of the file, initially `0`.
+  size = accessFH.getSize();
+  // Encode content to write to the file.
+  const content = textEncoder.encode(data);
+  console.log('CONTENT', content)
+  // Write the content at the beginning of the file.
+  accessFH.write(content, {at: size});
+  // Flush the changes.
+  accessFH.flush();
 }
 
 const getFileHandle = async (dirSegments, filename) => {
@@ -84,8 +98,15 @@ const getFileHandle = async (dirSegments, filename) => {
 
   // get the directory handle for parent directory
 
-  const dirHandle = await getDirHandle(dirSegments)
+  const dirHandle = await getDirHandle(dirSegments);
 
+  console.log('FILE DIRHANDLE', dirHandle);
+
+  const fileHandle = await dirHandle.getFileHandle(filename, {create: true});
+
+  const accessHandle = await fileHandle.createSyncAccessHandle();
+
+  return accessHandle;
 }
 
 const getDirHandle = async (dirSegments) => {
