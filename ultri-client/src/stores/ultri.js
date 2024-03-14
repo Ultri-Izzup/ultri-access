@@ -38,14 +38,6 @@ export const useUltriStore = defineStore("ultri", () => {
 
       validHandlers[msg.data.handler](msg.data);
 
-      if (msg.data.readDirectory) {
-        console.log("READ DIRECTORY RETURNED", msg.data.readDirectory);
-      }
-
-      if (msg.data.savedFile) {
-        console.log("A FILE WAS SAVED", msg.data.savedFile);
-        // Send to top level directory handler
-      }
     };
 
     console.log("WORKER LOADED IN STORE");
