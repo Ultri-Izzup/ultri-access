@@ -10,9 +10,9 @@ import { useStorage } from "@vueuse/core";
  */
 export const useUltriStore = defineStore("ultri", () => {
 
-  const workspaceSaved = (workspace) => {
-    console.log("WORKSPACED SAVED, UPDATING STORE", workspace);
-    workspaces.value = new Map([...workspaces.value, ...workspace])
+  const workspaceSaved = (data) => {
+    console.log("WORKSPACED SAVED, UPDATING STORE", data);
+    workspaces.value = new Map([...workspaces.value, ...data.savedFile])
   };
 
   const validHandlers = {
@@ -36,14 +36,14 @@ export const useUltriStore = defineStore("ultri", () => {
 
       console.log("HANDLER", validHandlers[msg.data.handler]);
 
-      validHandlers[msg.data.handler](msg.data.write_files);
+      validHandlers[msg.data.handler](msg.data);
 
-      if (msg.data.read_directory) {
-        console.log("READ DIRECTORY RETURNED", msg.data.read_directory);
+      if (msg.data.readDirectory) {
+        console.log("READ DIRECTORY RETURNED", msg.data.readDirectory);
       }
 
-      if (msg.data.write_files) {
-        console.log("WRITE FILES RETURNED", msg.data.write_files);
+      if (msg.data.savedFile) {
+        console.log("A FILE WAS SAVED", msg.data.savedFile);
         // Send to top level directory handler
       }
     };
@@ -76,7 +76,7 @@ export const useUltriStore = defineStore("ultri", () => {
       path: "/workspaces"
     };
     console.log("UWORKER", uWorker);
-    uWorker.postMessage("read_directory", readConf);
+    uWorker.postMessage("readDirectory", readConf);
   };
 
   const readDirectory = async (readConfigObj) => {
@@ -94,7 +94,7 @@ export const useUltriStore = defineStore("ultri", () => {
 
     console.log("WRITE DATA", writeData);
     const msgUid = crypto.randomUUID();
-    uWorker.postMessage({ write_files: writeData, handler: "workspaceSaved" });
+    uWorker.postMessage({ writeFiles: writeData, handler: "workspaceSaved" });
   };
 
   const $reset = () => {

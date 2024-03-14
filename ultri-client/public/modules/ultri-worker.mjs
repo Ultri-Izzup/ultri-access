@@ -90,7 +90,7 @@ const writeFile = async (dirSegments, filename, data, handler) => {
   accessFH.flush();
 
   const resultMap = new Map([[filePath, data]]);
-  self.postMessage({ write_files: resultMap, handler: handler });
+  self.postMessage({ savedFile: resultMap, handler: handler });
 };
 
 const getFileHandle = async (dirSegments, filename) => {
@@ -171,17 +171,17 @@ self.onmessage = async (msg) => {
   console.log("WORKER MESSAGE RECEIVED", msg);
 
   // Read a directory
-  if (msg.data.read_directory) {
-    console.log("READ DIRECTORY USING CONFIG:", msg.data.read_directory);
+  if (msg.data.readDirectory) {
+    console.log("READ DIRECTORY USING CONFIG:", msg.data.readDirectory);
 
-    self.postMessage({ read_directory: { result: "ok" } });
+    self.postMessage({ readDirectory: { result: "ok" } });
   }
 
   // Write one or more files
-  if (msg.data.write_files) {
-    console.log("WRITE FILES:", msg.data.write_files);
+  if (msg.data.writeFiles) {
+    console.log("WRITE FILES:", msg.data.writeFiles);
 
-    for (const [path, value] of msg.data.write_files) {
+    for (const [path, value] of msg.data.writeFiles) {
       console.log(`WRITING a/an ${typeof value} TO ${path}`);
       let writeable = value;
 
