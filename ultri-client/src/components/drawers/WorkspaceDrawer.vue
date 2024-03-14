@@ -9,7 +9,7 @@
         v-if=" workspaces.size > 0 "
       >
           <q-list>
-            <li v-for="[key, value] in $q.workspaces" :key="key">
+            <li v-for="[key, value] in workspaces" :key="key">
               {{ key }} => {{ value }};
             </li>
           </q-list>
