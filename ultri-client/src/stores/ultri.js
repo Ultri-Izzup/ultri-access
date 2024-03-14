@@ -11,8 +11,18 @@ import { useStorage } from "@vueuse/core";
 export const useUltriStore = defineStore("ultri", () => {
 
   const workspaceSaved = (data) => {
-    console.log("WORKSPACED SAVED, UPDATING STORE", data);
-    workspaces.value = new Map([...workspaces.value, ...data.savedFile])
+    console.log("WORKSPACED SAVED, UPDATING STORE", data.savedFile);
+
+    // Use the first/only file data
+    const [fileStr] = data.savedFile.values();
+
+    const fileData = JSON.parse(fileStr);
+
+    console.log('FILE DATA', fileData)
+
+    const newWorkspace = new Map([[fileData.uid, fileData]]);
+    console.log('FILE MAP', newWorkspace)
+    workspaces.value = new Map([...workspaces.value, ...newWorkspace])
   };
 
   const validHandlers = {
@@ -34,7 +44,7 @@ export const useUltriStore = defineStore("ultri", () => {
       console.log("STORE - DEDICATED WORKER EVENT RETURNED DATA \n", msg);
       console.log(`USE HANDLER ${msg.data.handler}`);
 
-      console.log("HANDLER", validHandlers[msg.data.handler]);
+      //console.log("HANDLER", validHandlers[msg.data.handler]);
 
       validHandlers[msg.data.handler](msg.data);
 

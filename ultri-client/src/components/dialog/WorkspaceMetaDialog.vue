@@ -37,7 +37,7 @@ const emits = defineEmits([
   // REQUIRED; need to specify some events that your
   // component will emit through useDialogPluginComponent()
   ...useDialogPluginComponent.emits,
- 'workspace'
+  "workspace",
 ]);
 
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
@@ -49,19 +49,29 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
 //                    example: onDialogOK({ /*...*/ }) - with payload
 // onDialogCancel - Function to call to settle dialog with "cancel" outcome
 
-// this is part of our example (so not required)
-function onCreateClick() {
+const onCreateClick = () => {
   // on OK, it is REQUIRED to
   // call onDialogOK (with optional payload)
-  const wrkspc = { uid: crypto.randomUUID(), name: name.value, description: description.value};
+  const wrkspc = {
+    uid: crypto.randomUUID(),
+    name: name.value,
+    description: description.value,
+    createdAt: new Date().toISOString(),
+  };
 
   emits("workspace", wrkspc);
+  resetForm();
   onDialogOK();
   // or with payload: onDialogOK({ ... })
   // ...and it will also hide the dialog automatically
 }
 
-function onUpdateClick() {
+const resetForm = () => {
+  name.value = null;
+  description.value = null;
+}
+
+const onUpdateClick = () => {
   // on OK, it is REQUIRED to
   // call onDialogOK (with optional payload)
   onDialogOK();
