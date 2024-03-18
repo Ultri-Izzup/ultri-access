@@ -16,7 +16,7 @@ const trimLeadingSlashRegex = /\//;
 
 const nameSafeRegex = /[^a-zA-Z0-9]\s/g;
 
-const parsePath = (path) => {
+const parseFilePath = (path) => {
   // Remove leading slash
   const cleanPath = path.replace(trimLeadingSlashRegex, "");
 
@@ -66,6 +66,31 @@ const parsePath = (path) => {
   return { dirSegments: null, filename: null };
 };
 
+const parseDirPath = (path) => {
+  // Remove leading slash
+  const cleanPath = path.replace(trimLeadingSlashRegex, "");
+
+  // Split on slashes
+  const segments = cleanPath.split("/");
+  console.log("SEGMENTS", segments);
+
+  // Validate first segment is a defined top level path.
+  const topLevel = segments[0];
+  if (topLevelPaths.includes(topLevel)) {
+    const scrubbedSegments = [];
+    for (const element of segments) {
+      console.log("SEGMENTS ELEMENT", element);
+      console.log("CLEAN SEGMENTS ELEMENT", element.replace(nameSafeRegex, ""));
+      scrubbedSegments.push(element.replace(nameSafeRegex, ""));
+    }
+
+    // Return segments and valid filename
+    return { dirSegments: scrubbedSegments };
+  }
+
+  return { dirSegments: null };
+};
+
 const writeFile = async (dirSegments, filename, data, handler) => {
   const filePath = `/${dirSegments.join("/")}/${filename}`;
 
@@ -104,9 +129,10 @@ const getFileHandle = async (dirSegments, filename) => {
 
   const fileHandle = await dirHandle.getFileHandle(filename, { create: true });
 
-  const accessHandle = await fileHandle.createSyncAccessHandle();
+  console.log("FileHandle", fileHandle);
 
-  return accessHandle;
+  return fileHandle;
+
 };
 
 const getDirHandle = async (dirSegments) => {
@@ -140,31 +166,80 @@ const getDirHandle = async (dirSegments) => {
 
   console.log("RETURING DIRHANDLE", currDirHandle);
   return currDirHandle;
+};
 
-  // //
+const readDirectory = async (dirSegments, handler, options = {}) => {
+  const targetHandleName = `/${dirSegments.join("/")}`;
 
-  // // Keep track of the current path segments to save the dirHandles as we recurse.
-  // const currHandleSegments = [];
+  console.log(`READING DIRECTORY ${targetHandleName}`);
 
-  //
+  // The object that will hold the properties and collected data
+  const dirObj = {path: targetHandleName};
+  const dirFiles = new Map();
+  const subDirs = new Map();
+  const fileData = new Map();
 
-  // for (const segment of dirSegments) {
+  // Get the directory handle
+  const dirHandle = await getDirHandle(dirSegments);
 
-  //   currHandleSegments.push(segment);
+  for await (const [name, handle] of dirHandle.entries()) {
+    const currPath = `${targetHandleName}${handle.name}`;
+    // FILES
+    if(handle.kind === 'file') {
+      if(!fileHandles.has(currPath)) {
+        fileHandles.set(currPath, handle)
+      }
+      dirFiles.set(handle.name, { fullPath: currPath })
+    }
+    // DIRECTORIES
+    if(handle.kind === 'directories') {
+      if(!dirHandles.has(currPath)) {
+        dirHandles.set(currPath, handle)
+      }
+      subDirs.set(handle.name, { fullPath: currPath })
+    }
+  }
+  // Load the requested files if found.
+  console.log('OPTIONS', options)
 
-  //   const dirPath = currHandleSegments.join("/");
+  if(options.loadFiles && options.loadFiles.length > 0) {
+    for (const fileName of options.loadFiles) {
+      console.log(`LOAD FILE CONTENT FOR ${fileName}`);
 
-  //   console.log('CURRENT DIR PATH', dirPath);
+      const fileHandle = await getFileHandle(dirSegments, fileName);
 
-  //   if (dirHandles.has(dirPath)) {
-  //     console.log(`USING CACHED DIRHANDLE FOR ${dirPath}`);
-  //     currDirHandle = dirHandles.get(dirPath);
-  //   } else {
-  //     console.log(`LOADING DIRHANDLE ${dirPath}`);
+      const accessHandle = await fileHandle.createSyncAccessHandle();
 
-  //     // dirHandles.set(dirPath, currDirHandle);
-  //   }
-  // }
+      console.log('ACCESS HANDLE', accessHandle)
+
+      const size = accessHandle.getSize();
+
+      // Prepare a data view of the length of the file.
+      const dataView = new DataView(new ArrayBuffer(size));
+
+      // Read the entire file into the data view.
+      accessHandle.read(dataView);
+
+      // Decode data into an string
+      const decoded = textDecoder.decode(dataView)
+
+      // Parse the string as JSON
+      const currData = JSON.parse(decoded);
+
+      // Store JSON in fileData Map
+      fileData.set(fileName, currData)
+
+      accessHandle.close()
+
+    }
+  }
+
+
+  dirObj.files = dirFiles;
+  dirObj.subDirs = subDirs;
+  dirObj.fileData = fileData;
+
+  self.postMessage({ directoryRead: dirObj, handler: handler });
 };
 
 self.onmessage = async (msg) => {
@@ -173,8 +248,10 @@ self.onmessage = async (msg) => {
   // Read a directory
   if (msg.data.readDirectory) {
     console.log("READ DIRECTORY USING CONFIG:", msg.data.readDirectory);
+    const { dirSegments } = parseDirPath(msg.data.readDirectory.path);
+    const options  = msg.data.readDirectory.opts;
 
-    self.postMessage({ readDirectory: { result: "ok" } });
+    readDirectory(dirSegments, msg.data.handler, options)
   }
 
   // Write one or more files
@@ -195,7 +272,7 @@ self.onmessage = async (msg) => {
       }
 
       // Break path into parts and filename
-      const { dirSegments, filename } = parsePath(path);
+      const { dirSegments, filename } = parseFilePath(path);
       console.log("DIR SEGMENTS", dirSegments);
       console.log("FILENAME", filename);
 
@@ -211,7 +288,7 @@ self.onmessage = async (msg) => {
       //   }
       // });
 
-      console.log(`SENT MSG FOR ${path} TO USE HANDLER ${msg.data.handler}`)
+      console.log(`SENT MSG FOR ${path} TO USE HANDLER ${msg.data.handler}`);
     }
   }
 };

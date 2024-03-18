@@ -25,10 +25,6 @@ export const useUltriStore = defineStore("ultri", () => {
     workspaces.value = new Map([...workspaces.value, ...newWorkspace])
   };
 
-  const validHandlers = {
-    workspaceSaved: workspaceSaved
-  };
-
   /**
    * Initialize Ultri Worker
    */
@@ -61,6 +57,38 @@ export const useUltriStore = defineStore("ultri", () => {
   const workspaces = useStorage("workspaces", new Map());
   const ultriVersion = ref(null);
 
+  console.log('WTFFFFFFFFFFFFFFFFFFFFFF', workspaces)
+
+  const workspaceRead = (data) => {
+
+    const localData = data.directoryRead;
+
+    const workspaceUid = localData.path.split('/')[2];
+
+    console.log(`WORKSPACE ${workspaceUid} READ, UPDATING STORE`, data);
+
+    const foundMeta = localData.fileData.get('meta.json');
+
+    const objUpdate = {
+      name: foundMeta.name,
+      description: foundMeta.description
+    }
+
+    const updateMap = new Map([[workspaceUid, objUpdate]])
+    console.log('WORKSPACES ????????????????????????????', workspaces.value)
+    if(workspaces.value.has(workspaceUid)) {
+      workspaces.value.set(workspaceUid, {...workspaces.value.get(workspaceUid), ...objUpdate})
+      console.log('WORKSPACE FOUND')
+    } else {
+      console.log('NEW WORKSPACE')
+    }
+  };
+
+  const validHandlers = {
+    workspaceSaved: workspaceSaved,
+    workspaceRead: workspaceRead,
+  };
+
   /**
    * GETTERS - *Computed* functions become store getters
    */
@@ -75,17 +103,30 @@ export const useUltriStore = defineStore("ultri", () => {
   const loadWorkspaces = async () => {
     console.log("LOADING WORKSPACES");
     const readConf = {
-      path: "/workspaces"
+      path: "/workspaces",
+      opts: {
+        loadFiles: ['manifest.json']
+      }
     };
-    console.log("UWORKER", uWorker);
     uWorker.postMessage("readDirectory", readConf);
   };
 
-  const readDirectory = async (readConfigObj) => {
-    const dirPath = readConfigObj.dirPath;
-
-    console.log("READ DIRECTORY", dirPath);
+  const loadWorkspace = async (workspaceUid) => {
+    const readConf = {
+      path: `/workspaces/${workspaceUid}`,
+      opts: {
+        loadFiles: ['meta.json']
+      }
+    };
+    console.log(`LOADING WORKSPACE ${workspaceUid} with config: `, readConf);
+    uWorker.postMessage({ readDirectory: readConf, handler: "workspaceRead" });
   };
+
+  // const readDirectory = async (readConf) => {
+  //   const dirPath = readConf.dirPath;
+
+  //   console.log("STORE - READ DIRECTORY", dirPath);
+  // };
 
   const saveWorkspace = (workspaceMeta) => {
     console.log("WORKSPACE META", workspaceMeta);
@@ -95,7 +136,6 @@ export const useUltriStore = defineStore("ultri", () => {
     const writeData = new Map([[path, workspaceMeta]]);
 
     console.log("WRITE DATA", writeData);
-    const msgUid = crypto.randomUUID();
     uWorker.postMessage({ writeFiles: writeData, handler: "workspaceSaved" });
   };
 
@@ -116,6 +156,7 @@ export const useUltriStore = defineStore("ultri", () => {
     workerEnabled,
 
     // ACTIONS
+    loadWorkspace,
     loadWorkspaces,
     $reset
   };
