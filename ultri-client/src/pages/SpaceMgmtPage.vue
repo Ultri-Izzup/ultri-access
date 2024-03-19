@@ -18,14 +18,12 @@ const $u = useUltriStore();
 
 const metaDialogVisible = ref(false);
 
-const { workspaces } = storeToRefs($u, readonly);
-
 const $q = useQuasar();
 const route = useRoute();
 
-watch(() => route.params.workspaceUid, async (newVal, oldVal) => {
-  console.log('NEW WORKSPACE VIEW', newVal)
-  await $u.loadWorkspace(newVal);
-}, {immediate: true})
+// watch(() => route.params.workspaceUid, async (newVal, oldVal) => {
+//   console.log('NEW WORKSPACE VIEW', newVal)
+//   await $u.loadSpace(newVal);
+// }, {immediate: true})
 
 </script>

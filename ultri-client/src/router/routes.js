@@ -9,10 +9,10 @@ const routes = [
   },
 
   {
-    path: '/workspace/:workspaceUid',
+    path: '/space/:spaceId',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { name:'workspaceMgmt', path: '', component: () => import('pages/WorkspaceMgmtPage.vue') }
+      { name:'spaceMgmt', path: '', component: () => import('pages/SpaceMgmtPage.vue') }
     ]
   },
 

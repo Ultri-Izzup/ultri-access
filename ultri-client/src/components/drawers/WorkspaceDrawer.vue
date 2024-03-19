@@ -2,24 +2,23 @@
   <q-scroll-area class="fit">
     <q-list>
       <q-expansion-item
-        label="Workspaces"
+        label="Spaces"
         icon="mdi-folder-open"
         clickable
-        v-if="workspaces.size > 0"
+        v-if="$u.spaces"
         class="text-weight-bold"
       >
         <q-list bordered separator>
           <q-item
-            v-for="[key, value] in workspaces"
-            :key="key"
+            v-for="space in $u.spaces"
+            :key="space.id"
             clickable
             v-ripple
-            :to="{ name: 'workspaceMgmt', params: { workspaceUid: value.uid }}"
+            :to="{ name: 'spaceMgmt', params: { spaceId: space.id }}"
           >
             <q-item-section>
-              <!-- <q-item-label overline>NEW</q-item-label> -->
-              <q-item-label class="ellipsis text-weight-regular">{{ value.name }}</q-item-label>
-              <q-item-label caption class="ellipsis">{{ value.description }}</q-item-label>
+              <q-item-label class="ellipsis text-weight-regular">{{ space.name }}</q-item-label>
+              <q-item-label caption class="ellipsis">{{ space.description }}</q-item-label>
             </q-item-section>
           </q-item>
         </q-list>
@@ -29,14 +28,14 @@
         <q-item-section avatar>
           <q-icon name="mdi-folder-plus"></q-icon>
         </q-item-section>
-        <q-item-section> Create Workspace </q-item-section>
+        <q-item-section> Create Space </q-item-section>
       </q-item>
       <q-separator></q-separator>
     </q-list>
     <workspace-meta-dialog
       v-model="metaDialogVisible"
       mode="create"
-      @workspace="(workspace) => $u.saveWorkspace(workspace)"
+      @space="createSpace"
     ></workspace-meta-dialog>
   </q-scroll-area>
 </template>
@@ -50,17 +49,25 @@ import { useQuasar } from "quasar";
 import WorkspaceMetaDialog from "../../components/dialog/WorkspaceMetaDialog.vue";
 
 import { useUltriStore } from "../../stores/ultri";
+import { useRouter } from "vue-router";
 const $u = useUltriStore();
 
 const metaDialogVisible = ref(false);
 
-const { workspaces } = storeToRefs($u, readonly);
+const router = useRouter();
+
+// const { workspaces } = storeToRefs($u, readonly);
 
 const $q = useQuasar();
 
-onMounted(async () => {
-  console.log("WORKER ENABLED?", $u.workerEnabled);
-  await $u.loadWorkspaces();
-  console.log("WORKSPACES LOADED", $u.workspaces);
-});
+const createSpace = async (space) => {
+  const spaceId = await $u.createSpace(space);
+  router.push({name: "spaceMgmt", params: { spaceId: spaceId }})
+}
+
+// onMounted(async () => {
+//   console.log("WORKER ENABLED?", $u.workerEnabled);
+//   // await $u.loadWorkspaces();
+//   // console.log("WORKSPACES LOADED", $u.workspaces);
+// });
 </script>

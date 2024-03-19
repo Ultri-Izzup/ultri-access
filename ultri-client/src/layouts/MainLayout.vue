@@ -25,7 +25,6 @@
     </q-drawer>
 
     <q-page-container>
-            {{$u.workerEnabled}}
       <router-view />
     </q-page-container>
 

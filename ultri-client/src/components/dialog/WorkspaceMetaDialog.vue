@@ -37,7 +37,7 @@ const emits = defineEmits([
   // REQUIRED; need to specify some events that your
   // component will emit through useDialogPluginComponent()
   ...useDialogPluginComponent.emits,
-  "workspace",
+  "space",
 ]);
 
 const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
@@ -52,14 +52,13 @@ const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
 const onCreateClick = () => {
   // on OK, it is REQUIRED to
   // call onDialogOK (with optional payload)
-  const wrkspc = {
-    uid: crypto.randomUUID(),
+  const spc = {
     name: name.value,
     description: description.value,
     createdAt: new Date().toISOString(),
   };
 
-  emits("workspace", wrkspc);
+  emits("space", spc);
   resetForm();
   onDialogOK();
   // or with payload: onDialogOK({ ... })
