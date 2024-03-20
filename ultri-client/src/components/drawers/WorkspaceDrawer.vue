@@ -5,10 +5,10 @@
         label="Spaces"
         icon="mdi-folder-open"
         clickable
-        v-if="$u.spaces"
+        v-if="$u.spaces && $u.spaces.length > 0"
         class="text-weight-bold"
       >
-        <q-list bordered separator>
+        <q-list bordered >
           <q-item
             v-for="space in $u.spaces"
             :key="space.id"

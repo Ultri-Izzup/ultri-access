@@ -6,18 +6,19 @@ import { liveQuery } from "dexie";
 import { db } from "../dexie/db.js";
 import { useObservable } from "@vueuse/rxjs";
 
-console.log('DEXIE DB', db.spaces)
+console.log("DEXIE DB", db.spaces);
 
 /**
  * The Ultri store manages Ultri functionality and state.
  * It communicates with the Ultri Worker.,
  */
 export const useUltriStore = defineStore("ultri", () => {
-
   /**
    * Initialize Ultri Worker
    */
   let uWorker = null;
+
+  console.log('USTORE ROUTER')
 
   if (window.Worker) {
     // Create Ultri Dedicated OPFS Worker.
@@ -26,11 +27,13 @@ export const useUltriStore = defineStore("ultri", () => {
 
     // Define handlers for each message type
     uWorker.onmessage = (msg) => {
-      console.log("DEDICATED WORKER EVENT RETURNED DATA TO ULTRI STORE \n", msg);
+      console.log(
+        "DEDICATED WORKER EVENT RETURNED DATA TO ULTRI STORE \n",
+        msg
+      );
       console.log(`USE HANDLER ${msg.data.handler}`);
 
       //validHandlers[msg.data.handler](msg.data);
-
     };
 
     console.log("WORKER LOADED IN STORE");
@@ -42,13 +45,9 @@ export const useUltriStore = defineStore("ultri", () => {
    * These should all be accounted for in the $reset function as well.
    */
 
-  const spaces  = useObservable(
-    liveQuery(() => db.spaces.toArray())
-  )
+  const spaces = useObservable(liveQuery(() => db.spaces.toArray()));
 
-  const validHandlers = {
-
-  };
+  const validHandlers = {};
 
   /**
    * GETTERS - *Computed* functions become store getters
@@ -62,16 +61,21 @@ export const useUltriStore = defineStore("ultri", () => {
    */
 
   const createSpace = async (def) => {
-    console.log('SPACE DEFINITION', def)
-    const newId = await db.spaces.add({ name: def.name, description: def.description, createdAt: def.createdAt });
-    console.log('NEWSPACE', newId)
+    console.log("SPACE DEFINITION", def);
+    const newId = await db.spaces.add({
+      name: def.name,
+      description: def.description,
+      createdAt: def.createdAt
+    });
+    console.log("NEWSPACE", newId);
     return newId;
-  }
-
-
-  const $reset = () => {
-
   };
+
+  const getSpace = async (spaceId) => {
+    return await db.spaces.where("id").equals(spaceId).first();
+  };
+
+  const $reset = () => {};
 
   /**
    * RETURN ONLY WHAT IS NEEDED EXTERNALLY
@@ -85,6 +89,7 @@ export const useUltriStore = defineStore("ultri", () => {
 
     // ACTIONS
     createSpace,
+    getSpace,
     $reset
   };
 });
