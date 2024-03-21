@@ -3,11 +3,10 @@
     <q-header elevated class="bg-primary text-white">
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
-
-        <q-toolbar-title>
-          <!-- <q-avatar>
-            <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg">
-          </q-avatar> -->
+        <q-toolbar-title v-if="currSpace">
+          {{currSpace.name}}
+        </q-toolbar-title>
+        <q-toolbar-title v-else>
           Ultri
         </q-toolbar-title>
       </q-toolbar>
@@ -20,7 +19,6 @@
       behavior="mobile"
       bordered
     >
-      <!-- drawer content -->
       <workspace-drawer></workspace-drawer>
     </q-drawer>
 
@@ -35,12 +33,11 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-
+import { ref, watch } from "vue";
+import { useRoute } from "vue-router";
 import WorkspaceDrawer from "../components/drawers/WorkspaceDrawer.vue";
 
 import { useUltriStore } from "../stores/ultri";
-
 const $u = useUltriStore();
 
 const leftDrawerOpen = ref(false);
@@ -48,5 +45,15 @@ const leftDrawerOpen = ref(false);
 const toggleLeftDrawer = () => {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 };
+
+const route = useRoute();
+
+const spaceId = ref(null);
+const currSpace = ref(null);
+
+watch(() => route.params.spaceId, async (newVal, oldVal) => {
+  spaceId.value = newVal;
+  currSpace.value = await $u.getSpace(newVal);
+}, {immediate: true})
 
 </script>
